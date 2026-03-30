@@ -20,7 +20,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// Mount all routes
+// Mount all routes 
 app.use('/api/auth', authRoutes)
 app.use('/api/sessions', sessionRoutes)
 app.use('/api/chat', chatRoutes)

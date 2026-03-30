@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
     })
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!, {
-      expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+      expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any
     })
 
     res.status(201).json({ token, userId: user._id, name: user.name })
@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
     if (!isValid) return res.status(401).json({ message: 'Incorrect PIN' })
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!, {
-      expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+      expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any
     })
 
     res.json({ token, userId: user._id, name: user.name })
