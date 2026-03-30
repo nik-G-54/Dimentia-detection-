@@ -27,8 +27,8 @@ scoreQueue.process('game', async (job) => {
     // If high risk, alert caregiver
     if (result.riskLevel === 'High') {
       const user = await User.findById(userId)
-      if (user?.caregiverPhone) {
-        await sendCaregiverAlert(user.caregiverPhone, user.name, result.explanation)
+      if (user?.caregiverEmail) {
+        await sendCaregiverAlert(user.caregiverEmail, user.name, result.explanation)
       }
     }
 
@@ -133,8 +133,8 @@ async function checkAndTriggerDailyComposite(userId: string) {
   })
 
   // Alert caregiver if high risk on composite
-  if (result.riskLevel === 'High' && user.caregiverPhone) {
-    await sendCaregiverAlert(user.caregiverPhone, user.name, result.explanation)
+  if (result.riskLevel === 'High' && user.caregiverEmail) {
+    await sendCaregiverAlert(user.caregiverEmail, user.name, result.explanation)
   }
 }
 
