@@ -135,4 +135,74 @@ router.post('/webcam', verifyJWT, async (req: AuthRequest, res) => {
   }
 })
 
+// GET /api/sessions/chat/:id
+router.get('/chat/:id', verifyJWT, async (req, res) => {
+  try {
+    const session = await ChatSession.findById(req.params.id)
+    if (!session) return res.status(404).json({ message: 'Session not found' })
+
+    if (session.languageScore === null) {
+      return res.json({ status: 'processing' })
+    }
+
+    res.json({
+      status: 'complete',
+      languageScore: session.languageScore,
+      riskLevel: session.riskLevel,
+      explanation: session.explanation,
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to fetch chat session', error: String(err) })
+  }
+})
+
+// GET /api/sessions/chat
+router.get('/chat', verifyJWT, async (req: AuthRequest, res) => {
+  try {
+    const sessions = await ChatSession.find({ userId: req.userId })
+      .sort({ recordedAt: -1 })
+      .limit(20)
+    res.json(sessions)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to fetch chat sessions', error: String(err) })
+  }
+})
+
+// GET /api/sessions/webcam/:id
+router.get('/webcam/:id', verifyJWT, async (req, res) => {
+  try {
+    const session = await WebcamSession.findById(req.params.id)
+    if (!session) return res.status(404).json({ message: 'Session not found' })
+
+    if (session.stressScore === null) {
+      return res.json({ status: 'processing' })
+    }
+
+    res.json({
+      status: 'complete',
+      stressScore: session.stressScore,
+      riskLevel: session.riskLevel,
+      explanation: session.explanation,
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to fetch webcam session', error: String(err) })
+  }
+})
+
+// GET /api/sessions/webcam
+router.get('/webcam', verifyJWT, async (req: AuthRequest, res) => {
+  try {
+    const sessions = await WebcamSession.find({ userId: req.userId })
+      .sort({ recordedAt: -1 })
+      .limit(20)
+    res.json(sessions)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to fetch webcam sessions', error: String(err) })
+  }
+})
+
 export default router
