@@ -9,6 +9,7 @@ export interface IRiskSnapshot extends Document {
   stage: 0 | 1 | 2 | 3
   trendSlope: number       // positive = worsening
   explanation: string
+  anomalyAlertSent: boolean
   sources: {
     gameScore: number
     chatScore: number
@@ -25,6 +26,7 @@ const RiskSnapshotSchema = new Schema<IRiskSnapshot>({
   stage:              { type: Number, enum: [0,1,2,3], required: true },
   trendSlope:         { type: Number, default: 0 },
   explanation:        { type: String, default: '' },
+  anomalyAlertSent:   { type: Boolean, default: false },
   sources:            {
     gameScore:  { type: Number, default: 0 },
     chatScore:  { type: Number, default: 0 },

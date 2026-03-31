@@ -140,6 +140,48 @@ async function checkAndTriggerDailyComposite(userId: string) {
   if (result.riskLevel === 'High' && user.caregiverEmail) {
     await sendCaregiverAlert(user.caregiverEmail, user.name, result.explanation)
   }
+
+  // Final step: Scan statistically for long-term deteriorating risk slopes
+  await checkTrendAnomaly(userId)
+}
+
+async function checkTrendAnomaly(userId: string) {
+  // 1. Fetch the last 7 RiskSnapshots sorted by date descending (0 is today)
+  const snapshots = await RiskSnapshot.find({ userId }).sort({ date: -1 }).limit(7)
+  
+  // 2. Not enough data to run anomaly checks
+  if (snapshots.length < 5) return
+
+  // 3. Prevent spamming (Did we already alert them today?)
+  const todaySnapshot = snapshots[0]
+  if (todaySnapshot.anomalyAlertSent) return
+
+  // 4. Check if trendSlope > 0.02 (worsening) for 5 recent consecutive snapshots
+  const recent5 = snapshots.slice(0, 5)
+  const isTrendWorsening = recent5.every(s => s.trendSlope > 0.02)
+  if (!isTrendWorsening) return
+
+  // 5. Check if compositeRiskScore increased in 4 of the last 5 days
+  let increaseCount = 0
+  const compareLimit = Math.min(snapshots.length - 1, 5) // Stop array bound crash
+  for (let i = 0; i < compareLimit; i++) {
+    // If newer snapshot score is strictly greater than older snapshot score
+    if (snapshots[i].compositeRiskScore > snapshots[i+1].compositeRiskScore) {
+      increaseCount++
+    }
+  }
+
+  // 6. Alert if both critical conditions trigger
+  if (increaseCount >= 4) {
+    const user = await User.findById(userId)
+    if (user?.caregiverEmail) {
+      const message = "5-day worsening trend detected. Composite risk has increased consistently. Consider scheduling a check-in."
+      await sendCaregiverAlert(user.caregiverEmail, user.name, message)
+      
+      // Update today's snapshot to block spam logic tomorrow
+      await RiskSnapshot.findByIdAndUpdate(todaySnapshot._id, { anomalyAlertSent: true })
+    }
+  }
 }
 
 console.log('✅ Score worker running')
