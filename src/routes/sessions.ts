@@ -1,5 +1,35 @@
 import express from 'express'
 import { verifyJWT, AuthRequest } from '../middleware/auth'
+import { z } from 'zod'
+
+const GameSessionSchema = z.object({
+  testType: z.enum(['memory_mosaic', 'word_garden', 'path_finder']),
+  score: z.number().min(0).max(1),
+  timeTaken: z.number().positive(),
+  errors: z.number().default(0),
+  hesitationGaps: z.array(z.number()).default([]),
+})
+
+const ChatSessionSchema = z.object({
+  avgWPM: z.number(),
+  wpmDelta: z.number(),
+  backspaceRate: z.number(),
+  avgPauseBetweenMessages: z.number(),
+  repetitionCount: z.number(),
+  avgSentenceLength: z.number(),
+  messages: z.array(z.string()),
+  sessionDuration: z.number(),
+  messageCount: z.number(),
+  timeOfDay: z.number()
+})
+
+const WebcamSessionSchema = z.object({
+  dominantEmotion: z.string(),
+  emotionConfidence: z.number().min(0).max(1),
+  avgBlinkRate: z.number().positive(),
+  gazeStabilityScore: z.number().min(0).max(1),
+  sessionDuration: z.number().positive()
+})
 import TestSession from '../models/TestSession'
 import ChatSession from '../models/ChatSession'
 import WebcamSession from '../models/WebcamSession'
@@ -10,6 +40,12 @@ const router = express.Router()
 
 // POST /api/sessions/game — frontend submits after game ends
 router.post('/game', verifyJWT, async (req: AuthRequest, res) => {
+  const parsed = GameSessionSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Validation failed', errors: parsed.error.errors })
+  }
+  req.body = parsed.data
+
   try {
     const { testType, score, timeTaken, errors, hesitationGaps } = req.body
     const userId = req.userId!
@@ -91,6 +127,12 @@ router.get('/game', verifyJWT, async (req: AuthRequest, res) => {
 
 // POST /api/sessions/chat
 router.post('/chat', verifyJWT, async (req: AuthRequest, res) => {
+  const parsed = ChatSessionSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Validation failed', errors: parsed.error.errors })
+  }
+  req.body = parsed.data
+
   try {
     const payload = req.body
     const userId = req.userId!
@@ -114,6 +156,12 @@ router.post('/chat', verifyJWT, async (req: AuthRequest, res) => {
 
 // POST /api/sessions/webcam
 router.post('/webcam', verifyJWT, async (req: AuthRequest, res) => {
+  const parsed = WebcamSessionSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Validation failed', errors: parsed.error.errors })
+  }
+  req.body = parsed.data
+
   try {
     const payload = req.body
     const userId = req.userId!

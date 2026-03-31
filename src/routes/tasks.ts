@@ -1,5 +1,11 @@
 import express from 'express'
 import { verifyJWT, AuthRequest } from '../middleware/auth'
+import { z } from 'zod'
+
+const TaskCompleteSchema = z.object({
+  tasksCompleted: z.number().min(0),
+  tasksTotal: z.number().min(1)
+})
 import TaskLog from '../models/TaskLog'
 import User from '../models/User'
 import RiskSnapshot from '../models/RiskSnapshot'
@@ -49,6 +55,12 @@ router.get('/today', verifyJWT, async (req: AuthRequest, res) => {
 
 // PUT /api/tasks/complete
 router.put('/complete', verifyJWT, async (req: AuthRequest, res) => {
+  const parsed = TaskCompleteSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Validation failed', errors: parsed.error.errors })
+  }
+  req.body = parsed.data
+
   try {
     const { tasksCompleted, tasksTotal } = req.body
     const today = new Date().toISOString().split('T')[0]
