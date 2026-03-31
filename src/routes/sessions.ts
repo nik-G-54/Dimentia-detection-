@@ -39,8 +39,9 @@ router.post('/game', verifyJWT, async (req: AuthRequest, res) => {
       status: 'processing',
       message: 'Analysing your results...'
     })
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to submit game session', error: err })
+  } catch (err: any) {
+    console.error('Crash in /game:', err)
+    res.status(500).json({ message: 'Failed to submit game session', error: err.message || String(err) })
   }
 })
 
@@ -48,7 +49,10 @@ router.post('/game', verifyJWT, async (req: AuthRequest, res) => {
 router.get('/game/:id', verifyJWT, async (req, res) => {
   try {
     const session = await TestSession.findById(req.params.id)
-    if (!session) return res.status(404).json({ message: 'Session not found' })
+    if (!session) {
+      console.log('Session is missing:', session)
+      return res.status(404).json({ message: 'Session not found' })
+    }
 
     if (session.riskScore === null) {
       // Still processing
@@ -64,6 +68,7 @@ router.get('/game/:id', verifyJWT, async (req, res) => {
       explanation: session.explanation,
     })
   } catch (err) {
+    console.log(err)
     res.status(500).json({ message: 'Failed to fetch session', error: err })
   }
 })
@@ -101,8 +106,9 @@ router.post('/chat', verifyJWT, async (req: AuthRequest, res) => {
     })
 
     res.status(201).json({ sessionId: session._id, status: 'processing' })
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to submit chat session', error: err })
+  } catch (err: any) {
+    console.error('Crash in /chat:', err)
+    res.status(500).json({ message: 'Failed to submit chat session', error: err.message || String(err) })
   }
 })
 
@@ -123,8 +129,9 @@ router.post('/webcam', verifyJWT, async (req: AuthRequest, res) => {
     })
 
     res.status(201).json({ sessionId: session._id, status: 'processing' })
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to submit webcam session', error: err })
+  } catch (err: any) {
+    console.error('Crash in /webcam:', err)
+    res.status(500).json({ message: 'Failed to submit webcam session', error: err.message || String(err) })
   }
 })
 

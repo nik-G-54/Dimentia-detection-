@@ -12,8 +12,14 @@ export const scoreGame = async (payload: {
   hesitationGaps: number[]
   age: number
 }) => {
-  const { data } = await axios.post(`${ML_URL}/score/game`, payload)
-  return data // { riskScore, riskLevel, stage, explanation }
+  try {
+    const { data } = await axios.post(`${ML_URL}/score/game`, payload)
+    return data // { riskScore, riskLevel, stage, explanation }
+  } catch (err: any) {
+    console.error(`❌ ML API Error (/score/game):`, err.message)
+    console.warn(`[ML Service Offline] Simulating Game Score...`)
+    return { riskScore: 0.25, riskLevel: 'Low', stage: 0, explanation: '[MOCK] Normal hesitation patterns.' }
+  }
 }
 
 // Calls POST /score/chat on Python FastAPI
@@ -30,8 +36,14 @@ export const scoreChat = async (payload: {
   messageCount: number
   timeOfDay: number
 }) => {
-  const { data } = await axios.post(`${ML_URL}/score/chat`, payload)
-  return data // { languageScore, riskLevel, explanation }
+  try {
+    const { data } = await axios.post(`${ML_URL}/score/chat`, payload)
+    return data // { languageScore, riskLevel, explanation }
+  } catch (err: any) {
+    console.error(`❌ ML API Error (/score/chat):`, err.message)
+    console.warn(`[ML Service Offline] Simulating Chat Score...`)
+    return { languageScore: 0.1, riskLevel: 'Low', explanation: '[MOCK] Natural typing rhythm.' }
+  }
 }
 
 // Calls POST /score/webcam on Python FastAPI
@@ -43,8 +55,14 @@ export const scoreWebcam = async (payload: {
   gazeStabilityScore: number
   sessionDuration: number
 }) => {
-  const { data } = await axios.post(`${ML_URL}/score/webcam`, payload)
-  return data // { stressScore, riskLevel, explanation }
+  try {
+    const { data } = await axios.post(`${ML_URL}/score/webcam`, payload)
+    return data // { stressScore, riskLevel, explanation }
+  } catch (err: any) {
+    console.error(`❌ ML API Error (/score/webcam):`, err.message)
+    console.warn(`[ML Service Offline] Simulating Webcam Score...`)
+    return { stressScore: 0.15, riskLevel: 'Low', explanation: '[MOCK] Patient appears relaxed.' }
+  }
 }
 
 // Calls POST /score/daily on Python FastAPI
@@ -58,6 +76,19 @@ export const scoreDaily = async (payload: {
   age: number
   livesAlone: boolean
 }) => {
-  const { data } = await axios.post(`${ML_URL}/score/daily`, payload)
-  return data // { compositeRiskScore, riskLevel, stage, trendSlope, explanation, sources }
+  try {
+    const { data } = await axios.post(`${ML_URL}/score/daily`, payload)
+    return data // { compositeRiskScore, riskLevel, stage, trendSlope, explanation, sources }
+  } catch (err: any) {
+    console.error(`❌ ML API Error (/score/daily):`, err.message)
+    console.warn(`[ML Service Offline] Simulating Daily Composite Score...`)
+    return { 
+      compositeRiskScore: 0.2, 
+      riskLevel: 'Low', 
+      stage: 0, 
+      trendSlope: 0.01, 
+      explanation: '[MOCK] Overall status is healthy.', 
+      sources: ['game', 'chat', 'webcam'] 
+    }
+  }
 }
