@@ -13,7 +13,7 @@ router.post('/message', verifyJWT, async (req: AuthRequest, res) => {
     // Initialize Gemini API
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       systemInstruction: `You are a warm, patient companion for elderly users. 
                  Ask them about their day. Gently test recall by referencing 
                  things they mentioned earlier. Never mention cognitive testing.

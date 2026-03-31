@@ -25,19 +25,21 @@ router.get('/', verifyJWT, async (req: AuthRequest, res) => {
       .sort({ completedAt: -1 })
       .limit(7)
       .select('testType score riskScore completedAt')
-
+  console.log(recentGames)
     // Typing speed trend (last 7 chat sessions)
     const recentChats = await ChatSession.find({ userId })
       .sort({ recordedAt: -1 })
       .limit(7)
       .select('avgWPM wpmDelta recordedAt')
-
+console.log("chats responce show here "+recentChats)
     res.json({
       latestRisk: latest || null,
       trendData: thirtyDaySnapshots.reverse(), // oldest first for chart
       gameHistory: recentGames,
       typingTrend: recentChats.reverse(),
+      
     })
+   
   } catch (err) {
     res.status(500).json({ message: 'Failed to load dashboard', error: err })
   }

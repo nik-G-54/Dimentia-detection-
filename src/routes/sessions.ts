@@ -75,8 +75,12 @@ router.get('/game', verifyJWT, async (req: AuthRequest, res) => {
       .sort({ completedAt: -1 })
       .limit(20)
     res.json(sessions)
+    console.log(sessions)
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch sessions', error: err })
+    console.log(err)
+    res.status(500).json({ message: 'Failed to fetch sessions', error: err }
+      
+    )
   }
 })
 

@@ -27,6 +27,8 @@ const TestSessionSchema = new Schema<ITestSession>({
   stage:           { type: Number, enum: [0,1,2,3], default: null },
   explanation:     { type: String, default: null },
   completedAt:     { type: Date, default: Date.now },
+}, { 
+  suppressReservedKeysWarning: true 
 })
 
 // Critical index for dashboard queries

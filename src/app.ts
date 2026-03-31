@@ -3,6 +3,9 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 
+import swaggerUi from 'swagger-ui-express'
+import { swaggerDocument } from './docs/swagger'
+
 import authRoutes from './routes/auth'
 import sessionRoutes from './routes/sessions'
 import chatRoutes from './routes/chat'
@@ -27,6 +30,9 @@ app.use('/api/chat', chatRoutes)
 app.use('/api/tasks', taskRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/caregiver', caregiverRoutes)
+
+// Setup Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 // Health check — useful for demo
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'CogniScreen Backend' }))
