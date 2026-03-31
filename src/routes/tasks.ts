@@ -27,18 +27,19 @@ function generateTasks(user: any, latestStage: number) {
   return tasks
 }
 
-// GET /api/tasks/:userId/today
-router.get('/:userId/today', verifyJWT, async (req, res) => {
+// GET /api/tasks/today
+router.get('/today', verifyJWT, async (req: AuthRequest, res) => {
   try {
-    const user = await User.findById(req.params.userId)
+    const userId = req.userId!
+    const user = await User.findById(userId)
     if (!user) return res.status(404).json({ message: 'User not found' })
 
-    const latestSnapshot = await RiskSnapshot.findOne({ userId: req.params.userId }).sort({ date: -1 })
+    const latestSnapshot = await RiskSnapshot.findOne({ userId }).sort({ date: -1 })
     const tasks = generateTasks(user, latestSnapshot?.stage || 0)
 
     // Check today's log for completion status
     const today = new Date().toISOString().split('T')[0]
-    const log = await TaskLog.findOne({ userId: req.params.userId, date: today })
+    const log = await TaskLog.findOne({ userId, date: today })
 
     res.json({ tasks, tasksCompleted: log?.tasksCompleted || 0, streakDay: log?.streakDay || 0 })
   } catch (err) {
@@ -46,12 +47,12 @@ router.get('/:userId/today', verifyJWT, async (req, res) => {
   }
 })
 
-// PUT /api/tasks/:userId/complete
-router.put('/:userId/complete', verifyJWT, async (req, res) => {
+// PUT /api/tasks/complete
+router.put('/complete', verifyJWT, async (req: AuthRequest, res) => {
   try {
     const { tasksCompleted, tasksTotal } = req.body
     const today = new Date().toISOString().split('T')[0]
-    const userId = req.params.userId
+    const userId = req.userId!
 
     // Get yesterday's log to calculate streak
     const yesterday = new Date()
@@ -72,10 +73,10 @@ router.put('/:userId/complete', verifyJWT, async (req, res) => {
   }
 })
 
-// GET /api/tasks/:userId/grid — last 365 days for GitHub-style grid
-router.get('/:userId/grid', verifyJWT, async (req, res) => {
+// GET /api/tasks/grid — last 365 days for GitHub-style grid
+router.get('/grid', verifyJWT, async (req: AuthRequest, res) => {
   try {
-    const logs = await TaskLog.find({ userId: req.params.userId })
+    const logs = await TaskLog.find({ userId: req.userId! })
       .sort({ date: -1 })
       .limit(365)
 

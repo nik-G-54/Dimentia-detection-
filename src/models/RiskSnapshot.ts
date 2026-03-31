@@ -33,6 +33,6 @@ const RiskSnapshotSchema = new Schema<IRiskSnapshot>({
   }
 })
 
-RiskSnapshotSchema.index({ userId: 1, date: -1 })
+RiskSnapshotSchema.index({ userId: 1, date: -1 }, { unique: true })
 
 export default mongoose.model<IRiskSnapshot>('RiskSnapshot', RiskSnapshotSchema)

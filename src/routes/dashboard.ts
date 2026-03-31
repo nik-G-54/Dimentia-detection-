@@ -1,15 +1,15 @@
 import express from 'express'
-import { verifyJWT } from '../middleware/auth'
+import { verifyJWT, AuthRequest } from '../middleware/auth'
 import RiskSnapshot from '../models/RiskSnapshot'
 import TestSession from '../models/TestSession'
 import ChatSession from '../models/ChatSession'
 
 const router = express.Router()
 
-// GET /api/dashboard/:userId — everything the dashboard page needs in one call
-router.get('/:userId', verifyJWT, async (req, res) => {
+// GET /api/dashboard — everything the dashboard page needs in one call
+router.get('/', verifyJWT, async (req: AuthRequest, res) => {
   try {
-    const { userId } = req.params
+    const userId = req.userId!
 
     // Latest risk snapshot
     const latest = await RiskSnapshot.findOne({ userId }).sort({ date: -1 })
@@ -43,11 +43,11 @@ router.get('/:userId', verifyJWT, async (req, res) => {
   }
 })
 
-// GET /api/reports/:userId/today
-router.get('/:userId/today', verifyJWT, async (req, res) => {
+// GET /api/dashboard/reports/today
+router.get('/reports/today', verifyJWT, async (req: AuthRequest, res) => {
   try {
     const today = new Date().toISOString().split('T')[0]
-    const userId = req.params.userId
+    const userId = req.userId!
 
     const [snapshot, games, chats] = await Promise.all([
       RiskSnapshot.findOne({ userId, date: today }),
@@ -61,12 +61,12 @@ router.get('/:userId/today', verifyJWT, async (req, res) => {
   }
 })
 
-// GET /api/reports/:userId/history
-router.get('/:userId/history', verifyJWT, async (req, res) => {
+// GET /api/dashboard/reports/history
+router.get('/reports/history', verifyJWT, async (req: AuthRequest, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1
     const limit = 30
-    const snapshots = await RiskSnapshot.find({ userId: req.params.userId })
+    const snapshots = await RiskSnapshot.find({ userId: req.userId! })
       .sort({ date: -1 })
       .skip((page - 1) * limit)
       .limit(limit)

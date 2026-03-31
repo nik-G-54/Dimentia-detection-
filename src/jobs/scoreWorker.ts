@@ -92,8 +92,12 @@ async function checkAndTriggerDailyComposite(userId: string) {
     WebcamSession.findOne({ userId, recordedAt: { $gte: new Date(today) } }).sort({ recordedAt: -1 }),
   ])
 
-  // Only run if all 3 have ML scores
-  if (!gameSession?.riskScore || !chatSession?.languageScore || !webcamSession?.stressScore) return
+  // Only run if all 3 have ML scores (using != null to prevent 0 from falsely returning)
+  if (
+    gameSession?.riskScore == null || 
+    chatSession?.languageScore == null || 
+    webcamSession?.stressScore == null
+  ) return
 
   // Don't run twice for the same day
   const existingSnapshot = await RiskSnapshot.findOne({ userId, date: today })
