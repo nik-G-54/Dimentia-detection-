@@ -1,6 +1,6 @@
 import express from 'express'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import rateLimit from 'express-rate-limit'
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import { verifyJWT, AuthRequest } from '../middleware/auth'
 import User from '../models/User'
 
@@ -10,7 +10,7 @@ const router = express.Router()
 const chatLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 60,
-  keyGenerator: (req: any) => req.userId || req.ip,
+  keyGenerator: (req: any) => req.userId || ipKeyGenerator(req.ip),
   message: { message: 'Too many messages. Please wait before continuing.' }
 })
 
@@ -18,7 +18,7 @@ const chatLimiter = rateLimit({
 // Frontend sends messages[], gets back AI reply
 router.post('/message', verifyJWT, chatLimiter, async (req: AuthRequest, res) => {
   try {
-    const { messages } = req.body
+    const { messages, language = 'english' } = req.body
     const userId = req.userId!
 
     // Fetch user profile for personalisation
@@ -40,6 +40,11 @@ router.post('/message', verifyJWT, chatLimiter, async (req: AuthRequest, res) =>
     })()
 
     const nameNote = user?.name ? `The user's name is ${user.name}.` : ''
+
+    const langInstruction = 
+      language === 'hindi' ? "RULE 7 — LANGUAGE: You must reply entirely in Hindi (written in standard Hindi script)." :
+      language === 'hinglish' ? "RULE 7 — LANGUAGE: You must reply in Hinglish (casual conversational Hindi written in English letters)." :
+      "RULE 7 — LANGUAGE: You must reply in standard English.";
 
     // Initialize Gemini API
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
@@ -74,7 +79,8 @@ health check, score, or anything implying evaluation.
 
 RULE 6 — OPENING:
 If the conversation has only one message, open with a warm greeting
-asking about their day. Example: "Good morning! How has your day been going so far?"`
+asking about their day. Example: "Good morning! How has your day been going so far?"
+${langInstruction}`
     })
 
     // Anthropic uses 'assistant', Gemini uses 'model'

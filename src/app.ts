@@ -23,7 +23,9 @@ const app = express()
 
 // Configure CORS universally to allow all origins
 const corsOptions = {
-  origin: true,
+  origin: (origin: any, callback: any) => {
+    callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

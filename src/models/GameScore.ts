@@ -27,7 +27,7 @@ const GameScoreSchema = new Schema<IGameScore>({
   reactionTime: { type: Number },
   duration: { type: Number },
   date: { type: String, required: true, index: true }, // YYYY-MM-DD
-}, { timestamps: true })
+}, { timestamps: true, suppressReservedKeysWarning: true })
 
 GameScoreSchema.index({ userId: 1, date: -1 })
 GameScoreSchema.index({ userId: 1, gameId: 1, date: -1 })
