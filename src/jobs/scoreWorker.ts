@@ -13,8 +13,13 @@ scoreQueue.process('game', async (job) => {
   const { sessionId, userId, testType, score, timeTaken, errors, hesitationGaps, age } = job.data
 
   try {
+    // Normalise new game types to existing ML categories
+    const mlType = testType === 'color_word'   ? 'memory_mosaic'
+                 : testType === 'word_scramble' ? 'word_garden'
+                 : testType
+
     // Call Python ML service
-    const result = await scoreGame({ userId, testType, score, timeTaken, errors, hesitationGaps, age })
+    const result = await scoreGame({ userId, testType: mlType, score, timeTaken, errors, hesitationGaps, age })
 
     // Write result back to MongoDB
     await TestSession.findByIdAndUpdate(sessionId, {
@@ -53,6 +58,18 @@ scoreQueue.process('chat', async (job) => {
       riskLevel: result.riskLevel,
       explanation: result.explanation,
     })
+
+    // Alert caregiver if high risk (same as game worker)
+    if (result.riskLevel === 'High') {
+      const user = await User.findById(payload.userId)
+      if (user?.caregiverEmail) {
+        await sendCaregiverAlert(
+          user.caregiverEmail,
+          user.name,
+          result.explanation
+        )
+      }
+    }
 
     await checkAndTriggerDailyComposite(payload.userId)
   } catch (err) {

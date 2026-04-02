@@ -26,7 +26,7 @@ router.post('/register', async (req, res) => {
       expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any
     })
 
-    res.status(201).json({ token, userId: user._id, name: user.name })
+    res.status(201).json({ token, userId: user._id, name: user.name, age: user.age })
   } catch (err) {
     console.log(err)
     res.status(500).json({ message: 'Registration failed', error: err })
@@ -48,7 +48,7 @@ router.post('/login', async (req, res) => {
       expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any
     })
 
-    res.json({ token, userId: user._id, name: user.name })
+    res.json({ token, userId: user._id, name: user.name, age: user.age })
   } catch (err) {
     res.status(500).json({ message: 'Login failed', error: err })
   }

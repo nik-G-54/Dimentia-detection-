@@ -3,7 +3,7 @@ import mongoose, { Schema } from 'mongoose'
 // We omit 'extends Document' here to avoid conflict with Mongoose's built-in 'errors' validation property
 export interface ITestSession {
   userId: mongoose.Types.ObjectId
-  testType: 'memory_mosaic' | 'word_garden' | 'path_finder'
+  testType: 'memory_mosaic' | 'word_garden' | 'path_finder' | 'color_word' | 'word_scramble'
   score: number           // 0.0 to 1.0 — normalised by frontend
   timeTaken: number       // ms
   errors: number
@@ -17,7 +17,7 @@ export interface ITestSession {
 
 const TestSessionSchema = new Schema<ITestSession>({
   userId:          { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  testType:        { type: String, enum: ['memory_mosaic','word_garden','path_finder'], required: true },
+  testType:        { type: String, enum: ['memory_mosaic','word_garden','path_finder','color_word','word_scramble'], required: true },
   score:           { type: Number, required: true },
   timeTaken:       { type: Number, required: true },
   errors:          { type: Number, default: 0 },

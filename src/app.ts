@@ -12,6 +12,7 @@ import chatRoutes from './routes/chat'
 import taskRoutes from './routes/tasks'
 import dashboardRoutes from './routes/dashboard'
 import caregiverRoutes from './routes/caregiver'
+import gameScoreRoutes from './routes/gameScores'
 
 // Import worker so it starts listening when server starts
 import './jobs/scoreWorker'
@@ -30,6 +31,7 @@ app.use('/api/chat', chatRoutes)
 app.use('/api/tasks', taskRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/caregiver', caregiverRoutes)
+app.use('/api/game-scores', gameScoreRoutes)
 
 // Setup Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))

@@ -3,7 +3,7 @@ import { verifyJWT, AuthRequest } from '../middleware/auth'
 import { z } from 'zod'
 
 const GameSessionSchema = z.object({
-  testType: z.enum(['memory_mosaic', 'word_garden', 'path_finder']),
+  testType: z.enum(['memory_mosaic', 'word_garden', 'path_finder', 'color_word', 'word_scramble']),
   score: z.number().min(0).max(1),
   timeTaken: z.number().positive(),
   errors: z.number().default(0),
@@ -11,16 +11,16 @@ const GameSessionSchema = z.object({
 })
 
 const ChatSessionSchema = z.object({
-  avgWPM: z.number(),
+  avgWPM: z.number().min(0),
   wpmDelta: z.number(),
-  backspaceRate: z.number(),
-  avgPauseBetweenMessages: z.number(),
-  repetitionCount: z.number(),
-  avgSentenceLength: z.number(),
-  messages: z.array(z.string()),
-  sessionDuration: z.number(),
-  messageCount: z.number(),
-  timeOfDay: z.number()
+  backspaceRate: z.number().min(0).max(1),
+  avgPauseBetweenMessages: z.number().min(0),
+  repetitionCount: z.number().min(0).int(),
+  avgSentenceLength: z.number().min(0),
+  messages: z.array(z.string()).min(1, 'At least one message is required'),
+  sessionDuration: z.number().positive(),
+  messageCount: z.number().positive().int(),
+  timeOfDay: z.number().min(0).max(23).int()
 })
 
 const WebcamSessionSchema = z.object({
@@ -250,6 +250,36 @@ router.get('/webcam', verifyJWT, async (req: AuthRequest, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Failed to fetch webcam sessions', error: String(err) })
+  }
+})
+
+// GET /api/sessions/game/daily — per-game daily summary
+router.get('/game/daily', verifyJWT, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!
+    const days = 7
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+
+    const sessions = await TestSession.find({
+      userId,
+      completedAt: { $gte: since },
+    }).sort({ completedAt: 1 })
+
+    // Group by day + testType
+    const grouped: Record<string, Record<string, number>> = {}
+    for (const s of sessions) {
+      const day = s.completedAt.toISOString().split('T')[0]
+      if (!grouped[day]) grouped[day] = {}
+      // Keep best score per game per day
+      if (!grouped[day][s.testType] || grouped[day][s.testType] < s.score) {
+        grouped[day][s.testType] = s.score
+      }
+    }
+
+    res.json({ grouped })
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch daily scores', error: err })
   }
 })
 
