@@ -21,30 +21,9 @@ dotenv.config()
 
 const app = express()
 
-// Configure CORS with frontend URL from environment variables
-const getAllowedOrigins = (): string[] => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5713'
-  const additionalOrigins = process.env.ADDITIONAL_ORIGINS
-    ? process.env.ADDITIONAL_ORIGINS.split(',').map(url => url.trim())
-    : []
-
-  return [frontendUrl, ...additionalOrigins]
-}
-
+// Configure CORS universally to allow all origins
 const corsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    const allowedOrigins = getAllowedOrigins()
-
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true)
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true)
-    } else {
-      console.warn(`⚠️ CORS blocked request from origin: ${origin}`)
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
