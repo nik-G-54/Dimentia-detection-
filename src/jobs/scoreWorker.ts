@@ -201,4 +201,9 @@ async function checkTrendAnomaly(userId: string) {
   }
 }
 
+// ── Global queue error listener ──
+scoreQueue.on('failed', (job, err) => {
+  console.error(`❌ Job ${job.id} failed:`, err)
+})
+
 console.log('✅ Score worker running')

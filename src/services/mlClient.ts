@@ -2,6 +2,11 @@ import axios from 'axios'
 
 const ML_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000'
 
+const mlHeaders = () => ({
+  'X-ML-API-Key': process.env.ML_API_KEY || '',
+  'Content-Type': 'application/json',
+})
+
 // Calls POST /score/game on Python FastAPI
 export const scoreGame = async (payload: {
   userId: string
@@ -13,7 +18,7 @@ export const scoreGame = async (payload: {
   age: number
 }) => {
   try {
-    const { data } = await axios.post(`${ML_URL}/score/game`, payload)
+    const { data } = await axios.post(`${ML_URL}/score/game`, payload, { headers: mlHeaders() })
     return data // { riskScore, riskLevel, stage, explanation }
   } catch (err: any) {
     console.error(`❌ ML API Error (/score/game):`, err.message)
@@ -37,7 +42,7 @@ export const scoreChat = async (payload: {
   timeOfDay: number
 }) => {
   try {
-    const { data } = await axios.post(`${ML_URL}/score/chat`, payload)
+    const { data } = await axios.post(`${ML_URL}/score/chat`, payload, { headers: mlHeaders() })
     return data // { languageScore, riskLevel, explanation }
   } catch (err: any) {
     console.error(`❌ ML API Error (/score/chat):`, err.message)
@@ -56,7 +61,7 @@ export const scoreWebcam = async (payload: {
   sessionDuration: number
 }) => {
   try {
-    const { data } = await axios.post(`${ML_URL}/score/webcam`, payload)
+    const { data } = await axios.post(`${ML_URL}/score/webcam`, payload, { headers: mlHeaders() })
     return data // { stressScore, riskLevel, explanation }
   } catch (err: any) {
     console.error(`❌ ML API Error (/score/webcam):`, err.message)
@@ -77,7 +82,7 @@ export const scoreDaily = async (payload: {
   livesAlone: boolean
 }) => {
   try {
-    const { data } = await axios.post(`${ML_URL}/score/daily`, payload)
+    const { data } = await axios.post(`${ML_URL}/score/daily`, payload, { headers: mlHeaders() })
     return data // { compositeRiskScore, riskLevel, stage, trendSlope, explanation, sources }
   } catch (err: any) {
     console.error(`❌ ML API Error (/score/daily):`, err.message)
